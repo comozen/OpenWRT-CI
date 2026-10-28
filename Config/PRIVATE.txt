@@ -1,0 +1,57 @@
+# ==============================================================================
+# 私有覆盖配置 · Config/PRIVATE.txt
+# ==============================================================================
+#
+# 加载顺序（见 .github/workflows/WRT-CORE.yml 的 Custom Settings 步骤）：
+#
+#   Config/IPQ95XX.txt  ->  Config/GENERAL.txt  ->  Scripts/Settings.sh
+#   ->  Config/PRIVATE.txt（本文件）  ->  Run workflow 的 PACKAGE 输入框
+#   ->  make defconfig
+#
+# .config 后写入的项覆盖先写入的，所以本文件优先级高于 GENERAL.txt、
+# 低于 PACKAGE 输入框。想单独改某一项又不想动 GENERAL.txt（避免与上游
+# VIKINGYFY/OpenWRT-CI 同步时产生冲突），就把覆盖行写在这里。
+#
+# 内容限制：只允许以 # 开头的注释、以 CONFIG_ 开头的配置行和空行。
+# 其它文本会污染 .config。
+#
+# 生效前提：目标包必须已存在于源码树或 feed 中。若不存在，先在
+# Scripts/Packages.sh 增加一条 UPDATE_PACKAGE 拉取源码，否则这里写
+# =y 会被 make defconfig 静默丢弃、且不报错。
+#
+# 设备与平台选择不要写在本文件，放 Config/IPQ95XX.txt。
+#
+# 验证方式：用 QCB-ALL 勾选 TEST 跑一轮（约 10 分钟，不编固件但照样
+# 执行 make defconfig），从生成的 Release 里下载 Config-*.txt，
+# 确认覆盖行按预期生效。
+# ==============================================================================
+
+
+# ------------------------------------------------------------------------------
+# 覆盖示例（去掉行首 # 生效）
+# ------------------------------------------------------------------------------
+
+# 关闭 GENERAL.txt 默认开启的插件
+#CONFIG_PACKAGE_luci-app-upnp=n
+
+# 打开源码树已有、但 GENERAL.txt 未列出的插件
+#CONFIG_PACKAGE_luci-app-acme=y
+#CONFIG_PACKAGE_luci-ssl-openssl=y
+
+# 调整 rootfs 压缩块大小（单位 KiB，默认 256；调小省空间、调大省 CPU）
+#CONFIG_TARGET_SQUASHFS_BLOCK_SIZE=256
+
+# 追加内核模块
+#CONFIG_PACKAGE_kmod-nft-queue=y
+
+
+# ------------------------------------------------------------------------------
+# 当前构建上下文（备查，勿在此处重复设置）
+# ------------------------------------------------------------------------------
+# 平台      qualcommbe / ipq95xx
+# 设备      xiaomi_be10000（IPQ9570，非 Pro；与 be10000-pro 镜像不可互刷）
+# 源码      VIKINGYFY/immortalwrt @ owrt
+# 主题      vantage        由 .github/workflows/QCB-ALL.yml 的 WRT_THEME 控制
+# LAN 地址  10.0.0.99      由 QCB-ALL.yml 的 WRT_IP 控制
+# WiFi      OWRT / 见 QCB-ALL.yml 的 WRT_SSID、WRT_WORD
+# 内核      6.18.55（随上游变动）
