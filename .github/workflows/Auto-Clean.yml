@@ -21,7 +21,8 @@ jobs:
         with:
           gh_token: ${{secrets.GITHUB_TOKEN}}
           delete_releases: true
-          releases_keep_latest: 0
+          #保留最近 2 个 Release，留一格回滚窗口（上游为 0）
+          releases_keep_latest: 2
           delete_tags: true
           delete_workflows: true
           workflows_keep_day: 0

@@ -31,6 +31,10 @@ permissions: write-all
 jobs:
   config:
     name: ${{matrix.CONFIG}}
+    #同一时间只允许一个 QCB 编译，避免并发抢缓存/重复发 Release
+    concurrency:
+      group: qcb-${{github.ref}}
+      cancel-in-progress: false
     strategy:
       fail-fast: false
       #max-parallel: 3
