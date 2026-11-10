@@ -31,7 +31,20 @@
 
 ## 常用改动
 
-**改 LAN 地址 / SSID / 主机名**：编辑 `.github/workflows/QCB-ALL.yml` 里的 `WRT_IP` / `WRT_SSID` / `WRT_WORD` / `WRT_NAME`。
+三个高频参数**不用改代码**，在 Actions → `QCB-ALL` → Run workflow 里直接选/填：
+
+| 输入项 | 默认 | 说明 |
+|---|---|---|
+| `DEVICE` | `xiaomi_be10000` | 机型下拉框；选定后覆盖 `Config/IPQ95XX.txt` 里的设备列表 |
+| `IP` | `10.0.0.99` | LAN 地址 |
+| `HOSTNAME` | `OWRT` | 主机名 |
+| `SSID` / `WIFI_PASSWORD` | `OWRT` / `12345678` | 默认 WiFi |
+
+字段留空或由 `Auto-Clean` 自动触发时，回落到表中的默认值（即 `QCB-ALL.yml` 里 `inputs.X || '默认值'` 的写法）。
+机型填错不会静默成功：`WRT-CORE` 在 `make defconfig` 之后会校验设备符号，不存在就直接报错退出。
+
+> 想改成"改默认值也不动代码"，可以再叠一层仓库变量
+> （Settings → Secrets and variables → Actions → Variables），把 `inputs.X` 换成 `inputs.X || vars.X || '默认值'` 即可。
 
 **加减插件**：先在 `Scripts/Packages.sh` 里加 `UPDATE_PACKAGE` 把源码拉进 `package/`，再到 `.config` 里选。
 配置加载顺序（后写的覆盖先写的）：

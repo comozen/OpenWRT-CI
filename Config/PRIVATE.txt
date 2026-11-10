@@ -19,7 +19,7 @@
 # Scripts/Packages.sh 增加一条 UPDATE_PACKAGE 拉取源码，否则这里写
 # =y 会被 make defconfig 静默丢弃、且不报错。
 #
-# 设备与平台选择不要写在本文件，放 Config/IPQ95XX.txt。
+# 设备与平台选择不要写在本文件：平台在 Config/IPQ95XX.txt，机型用 QCB-ALL 的 DEVICE 参数。
 #
 # 验证方式：用 QCB-ALL 勾选 TEST 跑一轮（约 10 分钟，不编固件但照样
 # 执行 make defconfig），从生成的 Release 里下载 Config-*.txt，

@@ -44,6 +44,10 @@ on:
         required: false
         default: false
         type: boolean
+      #可选：指定机型，留空则用 Config 文件里自带的设备列表
+      WRT_DEVICE:
+        required: false
+        type: string
 
 env:
   GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
@@ -59,6 +63,7 @@ env:
   WRT_SOURCE: ${{inputs.WRT_SOURCE}}
   WRT_PACKAGE: ${{inputs.WRT_PACKAGE}}
   WRT_TEST: ${{inputs.WRT_TEST}}
+  WRT_DEVICE: ${{inputs.WRT_DEVICE}}
 
 jobs:
   core:
@@ -193,7 +198,21 @@ jobs:
           $GITHUB_WORKSPACE/Scripts/Settings.sh
           $GITHUB_WORKSPACE/.github/scripts/prepare-build-host.sh
 
-          make defconfig -j$(nproc) && make clean -j$(nproc)
+          #指定机型时，覆盖 Config 文件里自带的设备列表
+          if [ -n "$WRT_DEVICE" ]; then
+            sed -i "/^CONFIG_TARGET_DEVICE_${WRT_TARGET}_${WRT_SUBTARGET}_DEVICE_/d" .config
+            echo "CONFIG_TARGET_DEVICE_${WRT_TARGET}_${WRT_SUBTARGET}_DEVICE_${WRT_DEVICE}=y" >> .config
+          fi
+
+          make defconfig -j$(nproc)
+
+          #机型符号不存在时 defconfig 会静默丢弃，最后编不出镜像，这里提前失败
+          if [ -n "$WRT_DEVICE" ] && ! grep -qx "CONFIG_TARGET_DEVICE_${WRT_TARGET}_${WRT_SUBTARGET}_DEVICE_${WRT_DEVICE}=y" .config; then
+            echo "::error::机型 ${WRT_DEVICE} 不在 ${WRT_TARGET}/${WRT_SUBTARGET} 的设备列表内"
+            exit 1
+          fi
+
+          make clean -j$(nproc)
 
       - name: Prepare Rust Toolchain
         if: ${{ !inputs.WRT_TEST }}
@@ -299,6 +318,7 @@ jobs:
 
             配置：${{env.WRT_CONFIG}}
             平台：${{env.WRT_TARGET}}
+            机型：${{env.WRT_DEVICE}}
 
             登录地址：${{env.WRT_IP}}
             登录密码：${{env.WRT_PW}}
