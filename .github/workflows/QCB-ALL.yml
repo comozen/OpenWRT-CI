@@ -36,8 +36,18 @@ on:
         required: false
         type: string
         default: OWRT
-      SSID:
-        description: 'WiFi 名称'
+      SSID_2G:
+        description: 'WiFi 名称 2.4G'
+        required: false
+        type: string
+        default: OWRT
+      SSID_5G:
+        description: 'WiFi 名称 5G（留空=同 2.4G）'
+        required: false
+        type: string
+        default: OWRT
+      SSID_6G:
+        description: 'WiFi 名称 6G（留空=同 2.4G）'
         required: false
         type: string
         default: OWRT
@@ -86,8 +96,10 @@ jobs:
       WRT_DEVICE: ${{inputs.DEVICE || 'xiaomi_be10000'}}
       #默认主机名
       WRT_NAME: ${{inputs.HOSTNAME || 'OWRT'}}
-      #默认WIFI名称
-      WRT_SSID: ${{inputs.SSID || 'OWRT'}}
+      #默认WIFI名称（2.4G / 5G / 6G 分频段）
+      WRT_SSID: ${{inputs.SSID_2G || 'OWRT'}}
+      WRT_SSID_5G: ${{inputs.SSID_5G || inputs.SSID_2G || 'OWRT'}}
+      WRT_SSID_6G: ${{inputs.SSID_6G || inputs.SSID_2G || 'OWRT'}}
       #默认WIFI密码
       WRT_WORD: ${{inputs.WIFI_PASSWORD || '12345678'}}
       #默认地址

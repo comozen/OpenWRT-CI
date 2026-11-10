@@ -38,10 +38,14 @@
 | `DEVICE` | `xiaomi_be10000` | 机型下拉框；选定后覆盖 `Config/IPQ95XX.txt` 里的设备列表 |
 | `IP` | `10.0.0.99` | LAN 地址 |
 | `HOSTNAME` | `OWRT` | 主机名 |
-| `SSID` / `WIFI_PASSWORD` | `OWRT` / `12345678` | 默认 WiFi |
+| `SSID_2G` / `SSID_5G` / `SSID_6G` | 都是 `OWRT` | 分频段 WiFi 名称，5G/6G 留空则沿用 2.4G |
+| `WIFI_PASSWORD` | `12345678` | 三频共用，至少 8 位 |
 
 字段留空或由 `Auto-Clean` 自动触发时，回落到表中的默认值（即 `QCB-ALL.yml` 里 `inputs.X || '默认值'` 的写法）。
 机型填错不会静默成功：`WRT-CORE` 在 `make defconfig` 之后会校验设备符号，不存在就直接报错退出。
+
+> SSID / 密码里不能出现单引号、`#`、`&`、反斜杠（会破坏 ucode 字符串或 sed 表达式），密码少于 8 位也会直接报错。
+> 另外 BE10000 的 6GHz 在国内国家码（CN）下不广播，实际生效的是 2.4G / 5G。
 
 > 想改成"改默认值也不动代码"，可以再叠一层仓库变量
 > （Settings → Secrets and variables → Actions → Variables），把 `inputs.X` 换成 `inputs.X || vars.X || '默认值'` 即可。

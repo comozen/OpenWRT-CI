@@ -11,18 +11,40 @@ find ./feeds/luci/modules/luci-mod-system/ -type f -name "flash.js" -exec sed -i
 #添加编译日期标识
 find ./feeds/luci/modules/luci-mod-status/ -type f -name "10_system.js" -exec sed -i "s/(\(luciversion || ''\))/(\1) + (' \/ $WRT_MARK-$WRT_DATE')/g" {} +
 
-#修改默认WIFI账号密码
-#mac80211.uc 用 ssid='...' 形式，router-tool 用 option ssid '...' 形式，两种都处理
+#修改默认WIFI账号密码（2.4G / 5G / 6G 可分别设 SSID，密码三频共用）
 WIFI_UC="./package/network/config/wifi-scripts/files/lib/wifi/mac80211.uc"
 ROUTER_TOOL="./package/emortal/luci-app-router-tool/root/etc/config/router-tool"
-for file in "$ROUTER_TOOL" "$WIFI_UC"; do
-	[ -f "$file" ] && sed -i \
-		-e "s/ssid='.*'/ssid='$WRT_SSID'/g" \
-		-e "s/key='.*'/key='$WRT_WORD'/g" \
-		-e "s/ssid '.*'/ssid '$WRT_SSID'/g" \
-		-e "s/key '.*'/key '$WRT_WORD'/g" \
-		"$file"
-done
+
+SSID_2G=${WRT_SSID:-OWRT}
+SSID_5G=${WRT_SSID_5G:-$SSID_2G}
+SSID_6G=${WRT_SSID_6G:-$SSID_2G}
+
+#这些字符会破坏 ucode 字符串或 sed 表达式，直接失败比编出一个连不上 WiFi 的固件好
+if printf '%s' "$SSID_2G$SSID_5G$SSID_6G$WRT_WORD" | grep -q "['#&\\\\]"; then
+	echo "::error::SSID / WiFi 密码不能包含单引号、#、& 或反斜杠"
+	exit 1
+fi
+if [ ${#WRT_WORD} -lt 8 ]; then
+	echo "::error::WiFi 密码至少 8 位（当前 ${#WRT_WORD} 位）"
+	exit 1
+fi
+
+if [ -f "$WIFI_UC" ]; then
+	#三个频段共用同一行默认值，这里改成按 band_name 分别取值
+	sed -i \
+		-e "s#^set \${si}\.ssid=.*#set \${si}.ssid='\${band_name == '5g' ? '$SSID_5G' : (band_name == '6g' ? '$SSID_6G' : '$SSID_2G')}'#" \
+		-e "s#^set \${si}\.key=.*#set \${si}.key='$WRT_WORD'#" \
+		"$WIFI_UC"
+
+	#上游改动会让补丁失配，此时必须报出来，否则会静默回落成默认 SSID
+	grep -q "^set \${si}\.ssid='\${band_name" "$WIFI_UC" ||
+		echo "::warning::三频 SSID 补丁未生效，mac80211.uc 结构可能已变化"
+fi
+
+#router-tool 首次开机向导的默认值（单值，用 2.4G 的）
+if [ -f "$ROUTER_TOOL" ]; then
+	sed -i -e "s/ssid '.*'/ssid '$SSID_2G'/g" -e "s/key '.*'/key '$WRT_WORD'/g" "$ROUTER_TOOL"
+fi
 
 CFG_FILE="./package/base-files/files/bin/config_generate"
 #修改默认IP地址
