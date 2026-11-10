@@ -11,16 +11,17 @@ find ./feeds/luci/modules/luci-mod-system/ -type f -name "flash.js" -exec sed -i
 #添加编译日期标识
 find ./feeds/luci/modules/luci-mod-status/ -type f -name "10_system.js" -exec sed -i "s/(\(luciversion || ''\))/(\1) + (' \/ $WRT_MARK-$WRT_DATE')/g" {} +
 
-#修改默认WIFI账号密码（2.4G / 5G / 6G 可分别设 SSID，密码三频共用）
+#修改默认WIFI账号密码（BE10000 射频是 2.4G + 5.2G + 5.8G，密码三频共用）
+#注：ath12k 把 5.2G 和 5.8G 都上报成 band=5g，只能靠 radio.freq_ranges 的下界区分
 WIFI_UC="./package/network/config/wifi-scripts/files/lib/wifi/mac80211.uc"
 ROUTER_TOOL="./package/emortal/luci-app-router-tool/root/etc/config/router-tool"
 
 SSID_2G=${WRT_SSID:-OWRT}
-SSID_5G=${WRT_SSID_5G:-$SSID_2G}
-SSID_6G=${WRT_SSID_6G:-$SSID_2G}
+SSID_52=${WRT_SSID_5_2G:-$SSID_2G}
+SSID_58=${WRT_SSID_5_8G:-$SSID_2G}
 
 #这些字符会破坏 ucode 字符串或 sed 表达式，直接失败比编出一个连不上 WiFi 的固件好
-if printf '%s' "$SSID_2G$SSID_5G$SSID_6G$WRT_WORD" | grep -q "['#&\\\\]"; then
+if printf '%s' "$SSID_2G$SSID_52$SSID_58$WRT_WORD" | grep -q "['#&\\\\]"; then
 	echo "::error::SSID / WiFi 密码不能包含单引号、#、& 或反斜杠"
 	exit 1
 fi
@@ -30,14 +31,14 @@ if [ ${#WRT_WORD} -lt 8 ]; then
 fi
 
 if [ -f "$WIFI_UC" ]; then
-	#三个频段共用同一行默认值，这里改成按 band_name 分别取值
+	#两个 5G 射频的 band_name 相同，用频段下界（kHz）5500000 区分 5.2G / 5.8G
 	sed -i \
-		-e "s#^set \${si}\.ssid=.*#set \${si}.ssid='\${band_name == '5g' ? '$SSID_5G' : (band_name == '6g' ? '$SSID_6G' : '$SSID_2G')}'#" \
+		-e "s#^set \${si}\.ssid=.*#set \${si}.ssid='\${band_name == '2g' ? '$SSID_2G' : ((radio.freq_ranges?.[0]?.[0] ?? 5170000) < 5500000 ? '$SSID_52' : '$SSID_58')}'#" \
 		-e "s#^set \${si}\.key=.*#set \${si}.key='$WRT_WORD'#" \
 		"$WIFI_UC"
 
 	#上游改动会让补丁失配，此时必须报出来，否则会静默回落成默认 SSID
-	grep -q "^set \${si}\.ssid='\${band_name" "$WIFI_UC" ||
+	grep -Fq "radio.freq_ranges?.[0]?.[0]" "$WIFI_UC" ||
 		echo "::warning::三频 SSID 补丁未生效，mac80211.uc 结构可能已变化"
 fi
 

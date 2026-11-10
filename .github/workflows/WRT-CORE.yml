@@ -22,10 +22,10 @@ on:
       WRT_WORD:
         required: true
         type: string
-      WRT_SSID_5G:
+      WRT_SSID_5_2G:
         required: false
         type: string
-      WRT_SSID_6G:
+      WRT_SSID_5_8G:
         required: false
         type: string
       WRT_IP:
@@ -61,8 +61,8 @@ env:
   WRT_THEME: ${{inputs.WRT_THEME}}
   WRT_NAME: ${{inputs.WRT_NAME}}
   WRT_SSID: ${{inputs.WRT_SSID}}
-  WRT_SSID_5G: ${{inputs.WRT_SSID_5G || inputs.WRT_SSID}}
-  WRT_SSID_6G: ${{inputs.WRT_SSID_6G || inputs.WRT_SSID}}
+  WRT_SSID_5_2G: ${{inputs.WRT_SSID_5_2G || inputs.WRT_SSID}}
+  WRT_SSID_5_8G: ${{inputs.WRT_SSID_5_8G || inputs.WRT_SSID}}
   WRT_WORD: ${{inputs.WRT_WORD}}
   WRT_IP: ${{inputs.WRT_IP}}
   WRT_PW: ${{inputs.WRT_PW}}
@@ -331,7 +331,7 @@ jobs:
             登录地址：${{env.WRT_IP}}
             登录密码：${{env.WRT_PW}}
 
-            WIFI名称：2.4G=${{env.WRT_SSID}} / 5G=${{env.WRT_SSID_5G}} / 6G=${{env.WRT_SSID_6G}}
+            WIFI名称：2.4G=${{env.WRT_SSID}} / 5.2G=${{env.WRT_SSID_5_2G}} / 5.8G=${{env.WRT_SSID_5_8G}}
             WIFI密码：${{env.WRT_WORD}}
 
             内核版本：${{env.WRT_KVER}}
