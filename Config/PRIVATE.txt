@@ -1,0 +1,16 @@
+# 个人配置覆盖文件（本文件为新增文件，上游没有，同步上游不会冲突）
+#
+# 生效顺序（Scripts/Settings.sh）：
+#   Config/<WRT_CONFIG>.txt  ->  Config/GENERAL.txt  ->  Config/PRIVATE.txt
+# 因此这里的赋值权限最高，用来覆盖上游 GENERAL.txt 的默认项。
+#
+# 原则：上游仓库里已有的文件尽量不要改，个人增减全部写在这里。
+
+# 插件：关闭上游默认开启项
+CONFIG_PACKAGE_luci-app-homeproxy=n
+CONFIG_PACKAGE_luci-app-gecoosac=n
+CONFIG_PACKAGE_luci-app-partexp=n
+CONFIG_PACKAGE_luci-app-wolultra=n
+
+# 插件：额外增加
+CONFIG_PACKAGE_luci-app-sfp-info=y

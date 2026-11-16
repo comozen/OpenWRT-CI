@@ -10,11 +10,23 @@ on:
   workflow_dispatch:
     inputs:
       CONFIG:
-        default: 'IPQ95XX'
+        default: 'MEDIATEK-WIFI-YES'
         required: true
         type: choice
         options:
+          - AIROHA-AN7581
+          - AIROHA-AN7583
+          - IPQ53XX
+          - IPQ60XX-WIFI-NO
+          - IPQ60XX-WIFI-YES
+          - IPQ807X-WIFI-NO
+          - IPQ807X-WIFI-YES
           - IPQ95XX
+          - MEDIATEK-WIFI-NO
+          - MEDIATEK-WIFI-YES
+          - ROCKCHIP
+          - X86
+          - TEST
       SOURCE:
         default: 'VIKINGYFY/immortalwrt'
         required: true
