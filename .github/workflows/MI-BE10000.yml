@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: MIT
 # 个人工作流：仅编译 Xiaomi BE10000（qualcommbe / ipq95xx）
 #
-# 本文件、Config/BE10000.txt、Config/PRIVATE.txt 都是新增文件，
+# 本文件、Config/MI-BE10000.txt、Config/PRIVATE.txt 都是新增文件，
 # 上游仓库没有同名文件，同步上游时不会产生冲突。
 
-name: BE10000
+name: MI-BE10000
 
 on:
   # 手动触发
@@ -25,11 +25,11 @@ permissions: write-all
 
 jobs:
   build:
-    name: BE10000
+    name: MI-BE10000
     uses: ./.github/workflows/WRT-CORE.yml
     with:
       # 编译配置（Config/BE10000.txt）
-      WRT_CONFIG: BE10000
+      WRT_CONFIG: MI-BE10000
       # 默认主题
       WRT_THEME: vantage
       # 默认主机名
