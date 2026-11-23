@@ -17,3 +17,16 @@ CONFIG_PACKAGE_luci-app-sfp-info=y
 
 # 个人自定义文件包（apk key / 仓库地址 / 其它随固件文件）
 CONFIG_PACKAGE_owrt-como=y
+
+# honk / dae 运行前提：内核 BTF + eBPF/TC + geo 数据
+# 注意：开启 BTF 需要关闭 DEBUG_INFO_REDUCED，内核会变大、构建变慢
+CONFIG_KERNEL_DEBUG_INFO_REDUCED=n
+CONFIG_KERNEL_DEBUG_INFO_BTF=y
+CONFIG_PACKAGE_kmod-sched-bpf=y
+CONFIG_PACKAGE_kmod-sched-core=y
+CONFIG_PACKAGE_kmod-veth=y
+CONFIG_PACKAGE_kmod-nft-queue=y
+CONFIG_PACKAGE_kmod-nfnetlink-queue=y
+CONFIG_PACKAGE_kmod-nf-conntrack=y
+CONFIG_PACKAGE_v2ray-geoip=y
+CONFIG_PACKAGE_v2ray-geosite=y
