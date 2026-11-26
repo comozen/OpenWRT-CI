@@ -95,6 +95,35 @@ UPDATE_PACKAGE "qmodem-generic" "LianXia233/luci-app-qmodem-generic" "main"
 #个人自定义文件包（apk 密钥、仓库地址、uci-defaults 等）
 UPDATE_PACKAGE "owrt-como" "comozen/owrt-como" "main"
 
+# owrt-como：构建时从 daeuniverse 仓库拉取最新 honk 相关 apk
+# 下载失败时保留仓库里已有的 apk，不影响构建
+OWRT_COMO_APK_DIR="./package/owrt-como/files/usr/share/owrt-como/apk"
+OWRT_COMO_APK_BASE="https://openwrt.daeuniverse.org/25.12/packages/aarch64_cortex-a53"
+if [ -d "$OWRT_COMO_APK_DIR" ]; then
+	tmp_apk_dir=$(mktemp -d)
+	apk_ok=1
+	for pkg in honk luci-app-honk luci-lib-daeuniverse luci-i18n-daeuniverse-zh-cn vmlinux-btf-builtin; do
+		file=$(curl -fsSL "$OWRT_COMO_APK_BASE/" 2>/dev/null |
+			grep -oE "\"${pkg}-[^\"]+\.apk\"" | tr -d '"' | sort -V | tail -1)
+		if [ -n "$file" ]; then
+			echo "Downloading $file"
+			curl -fsSL -o "$tmp_apk_dir/$file" "$OWRT_COMO_APK_BASE/$file" || apk_ok=0
+		else
+			echo "WARNING: $pkg not found in daeuniverse repo"
+			apk_ok=0
+		fi
+	done
+	if [ "$apk_ok" = 1 ]; then
+		rm -f "$OWRT_COMO_APK_DIR"/*.apk
+		mv "$tmp_apk_dir"/*.apk "$OWRT_COMO_APK_DIR"/
+		echo "Bundled honk apks refreshed:"
+		ls -l "$OWRT_COMO_APK_DIR"
+	else
+		echo "WARNING: failed to fetch latest honk apks, keeping bundled versions"
+	fi
+	rm -rf "$tmp_apk_dir"
+fi
+
 #更新软件包版本
 UPDATE_VERSION() {
 	local PKG_NAME=$1
